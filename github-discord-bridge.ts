@@ -48,8 +48,22 @@ export default {
       const sender = payload.sender.login;
       const repo = payload.repository.full_name;
 
+      const repoApiUrl = `https://api.github.com/repos/${repo}`;
+      const repoRes = await fetch(repoApiUrl, {
+        headers: {
+          "User-Agent": "github-to-discord-worker",
+          "Accept": "application/vnd.github.v3+json"
+        }
+      });
+
+      let starCount = "unknown";
+      if (repoRes.ok) {
+        const repoData = await repoRes.json();
+        starCount = repoData.stargazers_count;
+      }
+
       const message = {
-        content: `${sender} – just starred ⭐️ ${repo}`
+        content: `${sender} – just starred ⭐️ ${repo}\nTotal stars: ${starCount}`
       };
 
       await fetch(DISCORD_WEBHOOK, {
